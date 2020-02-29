@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
+using Microsoft.Bot.Builder.Teams;
+using Microsoft.Bot.Connector.Teams;
 
 namespace Microsoft.BotBuilderSamples.Bots
 {
@@ -15,6 +17,13 @@ namespace Microsoft.BotBuilderSamples.Bots
         {
             var replyText = $"Echo: {turnContext.Activity.Text}";
             await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
+            
+            // Make an operation call to fetch the list of channels in the team, and print count of channels.
+            var teamInfo = turnContext.Activity.TeamsGetTeamInfo();
+            var teamsContext = turnContext.TurnState.Get<ITeamsContext>();
+            var channels = await teamsContext.Operations.FetchChannelListAsync(teamInfo.Id);
+            await turnContext.SendActivityAsync($"You have {channels.Conversations.Count} channels in this team");
+            
         }
 
         protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
